@@ -1,7 +1,9 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /** Студент с автогенерацией ID и расчетом успеваемости. */
@@ -18,7 +20,7 @@ public class Student {
         this.fullName = fullName;
     }
 
-    /** Создание студента с точной записью группы (например, ПрИнж-5.1). */
+    /** Создание студента с точной записью группы. */
     public Student(String fullName, String group) {
         this.id = generateStudentId();
         this.group = group;
@@ -45,7 +47,7 @@ public class Student {
         checkpoints.add(checkpoint);
     }
 
-    /** Получение номер зачетки. */
+    /** Получение номера зачетки. */
     public String getId() {
         return id;
     }
@@ -65,7 +67,7 @@ public class Student {
         return checkpoints;
     }
 
-    /** Расчет среднего балла. */
+    /** Расчет общего среднего балла студента. */
     public double getAverageGrade() {
         if (checkpoints.isEmpty()) return 0.0;
         double sum = 0;
@@ -75,7 +77,20 @@ public class Student {
         return sum / checkpoints.size();
     }
 
-    /** Расчет взвешенного рейтинга. */
+    /** Расчет среднего балла студента по конкретной дисциплине. */
+    public double getAverageGradeBySubject(String subject) {
+        double sum = 0;
+        int count = 0;
+        for (Checkpoint cp : checkpoints) {
+            if (cp.getSubject().equalsIgnoreCase(subject)) {
+                sum += cp.getGrade().getValue();
+                count++;
+            }
+        }
+        return count == 0 ? 0.0 : sum / count;
+    }
+
+    /** Расчет взвешенного рейтинга студента. */
     public double getWeightedRating() {
         if (checkpoints.isEmpty()) return 0.0;
         double totalWeightedScore = 0;
@@ -87,13 +102,29 @@ public class Student {
         return totalWeight == 0 ? 0 : totalWeightedScore / totalWeight;
     }
 
-    /** Проверка наличия задолженностей. */
+    /** Проверка наличия задолженностей по последней попытке сдачи предмета. */
     public boolean hasDebts() {
+        Map<String, Grade> lastGradeBySubject = new HashMap<>();
         for (Checkpoint cp : checkpoints) {
-            if (cp.getGrade() == Grade.UNSATISFACTORY) {
+            lastGradeBySubject.put(cp.getSubject().toLowerCase(), cp.getGrade());
+        }
+
+        for (Grade grade : lastGradeBySubject.values()) {
+            if (grade == Grade.UNSATISFACTORY) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Проверка, является ли студент отличником. */
+    public boolean isExcellent() {
+        if (checkpoints.isEmpty()) return false;
+        for (Checkpoint cp : checkpoints) {
+            if (cp.getGrade() != Grade.EXCELLENT) {
+                return false;
+            }
+        }
+        return true;
     }
 }
