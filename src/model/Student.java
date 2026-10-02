@@ -104,13 +104,13 @@ public class Student {
 
     /** Проверка наличия задолженностей по последней попытке сдачи предмета. */
     public boolean hasDebts() {
-        Map<String, Grade> lastGradeBySubject = new HashMap<>();
+        java.util.Map<String, Checkpoint> latestCheckpoints = new java.util.HashMap<>();
         for (Checkpoint cp : checkpoints) {
-            lastGradeBySubject.put(cp.getSubject().toLowerCase(), cp.getGrade());
+            latestCheckpoints.put(cp.getSubject(), cp);
         }
 
-        for (Grade grade : lastGradeBySubject.values()) {
-            if (grade == Grade.UNSATISFACTORY) {
+        for (Checkpoint cp : latestCheckpoints.values()) {
+            if (cp.getGrade() == Grade.UNSATISFACTORY) {
                 return true;
             }
         }
